@@ -1,0 +1,65 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                     Draw My Levels|
+//|                                             forexroboteasy.com    |
+//|                                                    Forex Robot Easy Team|
+//+------------------------------------------------------------------+
+
+// Declare global variables
+input ENUM_DRAW_TYPE drawType = DRAW_ABOVE_BID; // Default level type to be drawn above the bid
+input bool redraw = true; // Option to redraw level
+
+//+------------------------------------------------------------------+
+//| Script program start function                                    |
+//+------------------------------------------------------------------+
+void OnStart()
+{
+   // Check if the script is being dropped on the chart
+   if (IsDropped())
+   {
+      // Display a message box to allow traders to choose to draw a new level or redo the level drawing
+      int result = MessageBox('Do you want to draw a new level?', 'Draw My Levels', MB_YESNO | MB_ICONQUESTION);
+      
+      // If traders choose to draw a new level, execute the DrawLevels function
+      if (result == IDYES)
+      {
+         DrawLevels();
+      }
+      // If traders choose to redo the level drawing and redraw option is enabled, execute the DrawLevels function
+      else if (result == IDNO && redraw)
+      {
+         DrawLevels();
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Function to draw levels on the chart                             |
+//+------------------------------------------------------------------+
+void DrawLevels()
+{
+   // Calculate the most recent bar in the zone and the three bars preceding it
+   int recentBar = iBars(NULL, 0) - 1;
+   int precedingBar1 = recentBar - 1;
+   int precedingBar2 = recentBar - 2;
+   int precedingBar3 = recentBar - 3;
+   
+   // Calculate the price position based on the draw type
+   double price;
+   if (drawType == DRAW_ABOVE_BID)
+   {
+      price = MarketInfo(Symbol(), MODE_ASK);
+   }
+   else if (drawType == DRAW_BELOW_BID)
+   {
+      price = MarketInfo(Symbol(), MODE_BID);
+   }
+   
+   // Draw the level on the chart
+   ObjectCreate('Level', OBJ_HLINE, 0, Time[recentBar], price);
+   ObjectSet('Level', OBJPROP_COLOR, clrRed);
+   ObjectSet('Level', OBJPROP_STYLE, STYLE_DOT);
+   
+   // Display a message box to indicate the level has been drawn
+   MessageBox('Level has been drawn.', 'Draw My Levels', MB_OK | MB_ICONINFORMATION);
+}
